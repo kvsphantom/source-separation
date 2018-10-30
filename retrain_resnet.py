@@ -125,7 +125,7 @@ class_names = image_datasets['train'].classes
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-""""
+"""
 ######################################################################
 # Visualize a few images
 # ^^^^^^^^^^^^^^^^^^^^^^
@@ -178,7 +178,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=1000):
     for epoch in range(num_epochs):
 
         logger.info('Epoch {}/{}'.format(epoch, num_epochs - 1))
-        logger.info('-' * 10)
+        logger.info('-' * 20)
 
         iteration = 1
         batch_time = AverageMeter()
@@ -328,7 +328,7 @@ exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 #
 
 model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                       num_epochs=25)
+                       num_epochs=1000)
 
 ######################################################################
 #

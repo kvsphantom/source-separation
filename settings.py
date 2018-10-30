@@ -12,5 +12,5 @@ PATH_TO_LOG_FILE='/homedtic/vshenoykadandale/source-separation/source-separation
 PATH_TO_TRAIN_VAL_DIR = '/homedtic/vshenoykadandale/source-separation/source-separation/dataset'
 
 #BATCH_SIZE=16
-BATCH_SIZE=32
+BATCH_SIZE=64
 
