@@ -306,7 +306,7 @@ def visualize_model(model, num_images=6):
 
 model_ft = models.resnet152(pretrained=True)
 num_ftrs = model_ft.fc.in_features
-model_ft.fc = nn.Linear(num_ftrs, 4)
+model_ft.fc = nn.Linear(num_ftrs, NUM_CLASSES)
 
 model_ft = torch.nn.DataParallel(model_ft)
 model_ft = model_ft.to(device)
