@@ -22,6 +22,14 @@ import logging
 
 from settings import *
 
+
+
+def create_folder(path):
+    if not os.path.exists(path):
+        os.umask(0) #To mask the permission restrictions on new files/directories being create
+        os.makedirs(path,0o755) # setting permissions for the folder
+create_folder(MODEL_WEIGHT_BASEPATH)
+
 def setup_logger(logger_name, log_file, level=logging.INFO,FORMAT='%(message)s'):
     l = logging.getLogger(logger_name)
     formatter = logging.Formatter(FORMAT)
@@ -167,9 +175,6 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=1000):
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
 
-    #data.setup_logger('log_info', '/homedtic/vshenoykadandale/source-separation/data/info_file.txt',FORMAT=FORMAT2)
-    #logger = logging.getLogger('log_info')
-
     for epoch in range(num_epochs):
 
         logger.info('Epoch {}/{}'.format(epoch, num_epochs - 1))
@@ -303,7 +308,7 @@ model_ft = models.resnet152(pretrained=True)
 num_ftrs = model_ft.fc.in_features
 model_ft.fc = nn.Linear(num_ftrs, 4)
 
-#model_ft = torch.nn.DataParallel(model_ft)
+model_ft = torch.nn.DataParallel(model_ft)
 model_ft = model_ft.to(device)
 
 criterion = nn.CrossEntropyLoss()
