@@ -5,41 +5,6 @@ Created on 10:57 AM
 @author: kvshenoy
 """
 
-# -*- coding: utf-8 -*-
-"""
-Transfer Learning Tutorial
-==========================
-**Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
-
-In this tutorial, you will learn how to train your network using
-transfer learning. You can read more about the transfer learning at `cs231n
-notes <http://cs231n.github.io/transfer-learning/>`__
-
-Quoting these notes,
-
-    In practice, very few people train an entire Convolutional Network
-    from scratch (with random initialization), because it is relatively
-    rare to have a dataset of sufficient size. Instead, it is common to
-    pretrain a ConvNet on a very large dataset (e.g. ImageNet, which
-    contains 1.2 million images with 1000 categories), and then use the
-    ConvNet either as an initialization or a fixed feature extractor for
-    the task of interest.
-
-These two major transfer learning scenarios look as follows:
-
--  **Finetuning the convnet**: Instead of random initializaion, we
-   initialize the network with a pretrained network, like the one that is
-   trained on imagenet 1000 dataset. Rest of the training looks as
-   usual.
--  **ConvNet as fixed feature extractor**: Here, we will freeze the weights
-   for all of the network except that of the final fully connected
-   layer. This last fully connected layer is replaced with a new one
-   with random weights and only this layer is trained.
-
-"""
-
-
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -49,19 +14,14 @@ import torchvision
 from torchvision import datasets, models, transforms
 from torchvision.models.resnet import model_urls
 model_urls['resnet152']=model_urls['resnet152'].replace('https://', 'http://') # To fix the issue with SSL Handshake for downloading pretrained model
-#import matplotlib.pyplot as plt
+import math
 import time
 import os
 import copy
 import logging
-#import data
-import shutil
 
-FORMAT = "[%(filename)s: %(funcName)s] %(message)s]"
-FORMAT2 = "[%(asctime)-15s %(filename)s:%(lineno)d %(funcName)s] %(message)s]"
+from settings import *
 
-MODEL_WEIGHT_BASEPATH='/home/kvshenoy/project/dataset/juan/weights'
-#data.setup_logger('log_info', '/homedtic/vshenoykadandale/source-separation/data/info_file.txt',FORMAT=FORMAT2)
 def setup_logger(logger_name, log_file, level=logging.INFO,FORMAT='%(message)s'):
     l = logging.getLogger(logger_name)
     formatter = logging.Formatter(FORMAT)
@@ -73,11 +33,36 @@ def setup_logger(logger_name, log_file, level=logging.INFO,FORMAT='%(message)s')
     l.setLevel(level)
     l.addHandler(fileHandler)
     l.addHandler(streamHandler)
-setup_logger('log1', '/home/kvshenoy/project/dataset/juan/info_file.txt')
+
+setup_logger('log1', PATH_TO_LOG_FILE)
 logger = logging.getLogger('log1')
 logger.info('CUDA Available? : '+str(torch.cuda.is_available()))
 
 #plt.ion()   # interactive mode
+
+
+class AverageMeter(object):
+    """Computes and stores the average and current value"""
+
+    def __init__(self, hist=False):
+        self.track_hist = hist
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+        if self.track_hist:
+            self.hist = []
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+        if self.track_hist:
+            self.hist.append(val)
 
 ######################################################################
 # Load Data
@@ -117,19 +102,22 @@ data_transforms = {
     ]),
 }
 
-data_dir = '/home/kvshenoy/project/dataset/juan/dummy'
-image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
+image_datasets = {x: datasets.ImageFolder(os.path.join(PATH_TO_TRAIN_VAL_DIR, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
-dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=16,
+dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=BATCH_SIZE,
                                              shuffle=True, num_workers=4)
               for x in ['train', 'val']}
 
+
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
+iterations=int(math.ceil((dataset_sizes['train']+dataset_sizes['val'])/BATCH_SIZE))
+
 class_names = image_datasets['train'].classes
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+""""
 ######################################################################
 # Visualize a few images
 # ^^^^^^^^^^^^^^^^^^^^^^
@@ -137,7 +125,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # augmentations.
 
 def imshow(inp, title=None):
-    """Imshow for Tensor."""
+    #Imshow for Tensor.
     inp = inp.numpy().transpose((1, 2, 0))
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
@@ -156,7 +144,7 @@ inputs, classes = next(iter(dataloaders['train']))
 out = torchvision.utils.make_grid(inputs)
 
 #imshow(out, title=[class_names[x] for x in classes])
-
+"""
 
 ######################################################################
 # Training the model
@@ -175,7 +163,6 @@ def save_checkpoint(state, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
 
 def train_model(model, criterion, optimizer, scheduler, num_epochs=1000):
-    since = time.time()
 
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
@@ -184,11 +171,16 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=1000):
     #logger = logging.getLogger('log_info')
 
     for epoch in range(num_epochs):
-        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+
         logger.info('Epoch {}/{}'.format(epoch, num_epochs - 1))
-        print('-' * 10)
         logger.info('-' * 10)
 
+        iteration = 1
+        batch_time = AverageMeter()
+        data_time = AverageMeter()
+        batch_loss = AverageMeter(hist=True)
+        since = time.time()
+        begin=since
         # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
             if phase == 'train':
@@ -200,6 +192,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=1000):
             running_loss = 0.0
             running_corrects = 0
 
+
+
             # Iterate over data.
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device)
@@ -207,6 +201,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=1000):
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
+
+                data_time.update(time.time() - since)
 
                 # forward
                 # track history if only in train
@@ -224,11 +220,20 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=1000):
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
 
+                batch_loss.update(loss.item() * inputs.size(0))
+                batch_time.update(time.time() - since)
+                since = time.time()
+                logger.info('Epoch: [{0}][{1}/{2}]\t'
+                            'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                            'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+                            'Loss {loss.val:.4f} ({loss.avg:.4f})'.format(
+                    epoch, iteration, iterations, batch_time=batch_time,
+                    data_time=data_time, loss=batch_loss))
+                iteration+=1
+
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
 
-            print('{} Loss: {:.4f} Acc: {:.4f}'.format(
-                phase, epoch_loss, epoch_acc))
             logger.info('{} Loss: {:.4f} Acc: {:.4f}'.format(
                                 phase, epoch_loss, epoch_acc))
 
@@ -236,22 +241,19 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=1000):
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
-                logger.info(model)
                 save_checkpoint({
                         'epoch': epoch,
                         'state_dict': model.state_dict(),
                         'best_acc1': best_acc,
                         'optimizer' : optimizer.state_dict(),
                         },os.path.join(MODEL_WEIGHT_BASEPATH,
-                                       "epoch.{:02d}-val_loss.{:.3f}-acc.{epoch_acc:.3f}.hdf5".format(
+                                       "epoch.{:02d}-val_loss.{:.3f}-acc.{:.3f}.hdf5".format(
                                         epoch,epoch_loss,epoch_acc)))
-    time_elapsed = time.time() - since
-    print('Training complete in {:.0f}m {:.0f}s'.format(
-        time_elapsed // 60, time_elapsed % 60))
-    logger.info('Training complete in {:.0f}m {:.0f}s'.format(
-                time_elapsed // 60, time_elapsed % 60))
-    print('Best val Acc: {:4f}'.format(best_acc))
-    logger.info('Best val Acc: {:4f}'.format(best_acc))
+
+        time_elapsed = time.time() - begin
+        logger.info('Training complete in {:.0f}m {:.0f}s'.format(
+                    time_elapsed // 60, time_elapsed % 60))
+        logger.info('Best val Acc: {:4f}'.format(best_acc))
 
     # load best model weights
     model.load_state_dict(best_model_wts)
