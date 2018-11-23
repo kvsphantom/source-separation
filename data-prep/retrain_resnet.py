@@ -19,7 +19,9 @@ import time
 import os
 import copy
 import logging
+import sys
 
+sys.path.append('../')
 from settings import *
 
 
