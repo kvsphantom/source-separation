@@ -11,7 +11,8 @@ PATH_TO_LOG_FILE='/homedtic/vshenoykadandale/source-separation/fps2/info_file.tx
 
 #PATH_TO_TRAIN_VAL_DIR='/home/kvshenoy/project/code/source-separation/dataset'
 #PATH_TO_TRAIN_VAL_DIR='/homedtic/vshenoykadandale/source-separation/source-separation/dataset'
-PATH_TO_TRAIN_VAL_DIR='/homedtic/vshenoykadandale/dataset/juan/splits_fps2'
+#PATH_TO_TRAIN_VAL_DIR='/homedtic/vshenoykadandale/dataset/juan/splits_fps2'
+PATH_TO_TRAIN_VAL_DIR='/home/kvshenoy/project/dataset/juan/split'
 
 #BATCH_SIZE=16
 BATCH_SIZE=64
