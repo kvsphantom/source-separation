@@ -1,11 +1,5 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-__author__ = "Juan Montesinos"
-__year__ = "2018"
-__version__ = "1.0"
-__maintainer__ = "Juan Montesinos"
-__email__ = "juanfelipe.montesinos@upf.edu"
-__status__ = "Stable"
 
 import sys
 import os
@@ -21,9 +15,9 @@ for i,entry in enumerate(times_dict):
     To = entry['to']
     Tf = entry['tf']
     filename = entry['file']
-    filepath = os.path.join(PATH_TO_RAW_DATASET, filename + '.mp4')
+    filepath = os.path.join(PATH_TO_UNCUT_DATASET, filename + '.mp4')
     category = filename[:-2]
-    category_path=os.path.join(PATH_TO_ORIGINAL_DATASET, category)
+    category_path=os.path.join(PATH_TO_CUT_DATASET, category)
     create_folder(category_path)
 
     N = len(To)

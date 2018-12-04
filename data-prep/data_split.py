@@ -20,7 +20,7 @@ create_folder(PATH_TO_TRAIN_VAL_DIR)
 
 X=[]
 y=[]
-for path, subdirs, files in os.walk(INPUT_DIR_PATH):
+for path, subdirs, files in os.walk(PATH_TO_UNCUT_DATASET_FRAMES):
     for name in files:
         #file_list.append(name)
         #input_list.append(os.path.join(path, name))

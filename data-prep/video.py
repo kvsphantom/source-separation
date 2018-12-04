@@ -9,7 +9,12 @@ Created on Tue Oct 23 17:36:25 2018
 import os
 import numpy as np
 import cv2
+import sys
 import math
+
+sys.path.append('../')
+from settings import *
+
 
 def create_folder(path):
     if not os.path.exists(path):
@@ -52,26 +57,25 @@ def extract_frames(src_path,dest_path,req_fps,start_times,stop_times,video_metri
 
 fps=0.01 #setting frames per second that we need to sample from each of the video
 classes={'cello','clarinet','erhu','flute','trumpet','tuba','violin','xylophone'}
-input_dir = '/home/kvshenoy/project/dataset/juan/original'
-output_path='/home/kvshenoy/project/dataset/juan/fps0.01'
-video_metric_log='/home/kvshenoy/project/dataset/metric_log_fps0.01.csv'
-empty_frame_log='/home/kvshenoy/project/dataset/empty_frame_log_fps0.01.csv'
+video_metric_log=os.path.join(PATH_TO_LOG_DIR,'metric_log.csv')
+create_folder(PATH_TO_LOG_DIR)
+empty_frame_log=os.path.join(PATH_TO_LOG_DIR,'empty_frame_log.csv')
 with open(video_metric_log, "a") as video_metric_log_file:
     video_metric_log_file.write("ID,FPS\n")
 with open(empty_frame_log, "a") as empty_frame_log_file:
     empty_frame_log_file.write("ID,FRAME\n")
 
-create_folder(output_path)
+create_folder(PATH_TO_UNCUT_DATASET_FRAMES)
 for each in classes:
-    folder_path=os.path.join(output_path,each)
+    folder_path=os.path.join(PATH_TO_UNCUT_DATASET_FRAMES,each)
     create_folder(folder_path)
 
-time_dict=np.load('./times.npy')
+time_dict=np.load(TIMESTAMPS)
 for entry in time_dict:
     filename=entry['file']
-    filepath=os.path.join(input_dir,filename+'.mp4')
+    filepath=os.path.join(PATH_TO_UNCUT_DATASET,filename+'.mp4')
     category=filename[:-2]
-    dest_path = os.path.join(output_path, category)
+    dest_path = os.path.join(PATH_TO_UNCUT_DATASET_FRAMES,category)
     if category in classes: #selecting only the instrument classes with one instrument
         extract_frames(filepath,dest_path,fps,entry['to'],entry['tf'],video_metric_log,empty_frame_log)
     else:

@@ -16,6 +16,14 @@ def create_folder(path):
         os.makedirs(path,0o755) # setting permissions for the folder
 
 
+def binarize(arr, threshold):
+    binarized = arr.copy()
+    binarized[np.where(binarized < threshold)] = 0
+    binarized[np.where(binarized == threshold)] = 1
+    binarized[np.where(binarized > threshold)] = 1
+
+    return binarized.astype(int)
+
 def extract_frames_v1(src_path,dest_path,req_fps):
     cap = cv2.VideoCapture(src_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))

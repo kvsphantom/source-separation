@@ -41,7 +41,7 @@ duet_class_mapping={'cf':['cello','flute'],
 
 utils.create_folder(PATH_TO_AV_DUMPS)
 
-for root,dirs,files in sorted(os.walk(PATH_TO_ORIGINAL_DATASET)):
+for root,dirs,files in sorted(os.walk(PATH_TO_CUT_DATASET)):
     for file in sorted(files):
         print('[FOLDER] : '+file[:-4])
         #filepath=os.path.join(PATH_TO_ORIGINAL_DATASET,filename+'.mp4')
@@ -50,11 +50,11 @@ for root,dirs,files in sorted(os.walk(PATH_TO_ORIGINAL_DATASET)):
             continue
         else:
             ### EXTRACT VISUALS FROM THE VIDEO SEGMENTS
-            #visuals_dump_path=os.path.join(PATH_TO_AV_DUMPS,category,file[:-4],'visuals')
-            #utils.create_folder(visuals_dump_path)
+            visuals_dump_path=os.path.join(PATH_TO_AV_DUMPS,category,file[:-4],'visuals')
+            utils.create_folder(visuals_dump_path)
             src_path=os.path.join(root,file)
-            #target_fps=1
-            #frames=video_utils.get_frames(target_fps,src_path,visuals_dump_path)
+            target_fps=1
+            frames=video_utils.get_frames(target_fps,src_path,visuals_dump_path)
             ### EXTRACT WAV FILES FROM THE VIDEO SEGMENTS
             audio_dump_folder = os.path.join(PATH_TO_AV_DUMPS, category, file[:-4], 'audio')
             utils.create_folder(audio_dump_folder)

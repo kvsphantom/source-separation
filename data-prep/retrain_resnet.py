@@ -44,7 +44,7 @@ def setup_logger(logger_name, log_file, level=logging.INFO,FORMAT='%(message)s')
     l.addHandler(fileHandler)
     l.addHandler(streamHandler)
 
-setup_logger('log1', PATH_TO_LOG_FILE)
+setup_logger('log1', os.path.join(PATH_TO_LOG_DIR,'deep.log'))
 logger = logging.getLogger('log1')
 logger.info('CUDA Available? : '+str(torch.cuda.is_available()))
 
@@ -99,14 +99,14 @@ class AverageMeter(object):
 # Just normalization for validation
 data_transforms = {
     'train': transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
+        #transforms.RandomResizedCrop(224),
+        #transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
     'val': transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
+        #transforms.Resize(256),
+        #transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
@@ -116,7 +116,7 @@ image_datasets = {x: datasets.ImageFolder(os.path.join(PATH_TO_TRAIN_VAL_DIR, x)
                                           data_transforms[x])
                   for x in ['train', 'val']}
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=BATCH_SIZE,
-                                             shuffle=True, num_workers=4)
+                                             shuffle=True, num_workers=12)
               for x in ['train', 'val']}
 
 
@@ -330,7 +330,7 @@ exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 #
 
 model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                       num_epochs=1000)
+                       num_epochs=1)
 
 ######################################################################
 #
