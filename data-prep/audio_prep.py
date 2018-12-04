@@ -35,7 +35,7 @@ for category in natsorted(classes, key=lambda y: y.lower()):
             resampled_data=librosa.resample(data, fs, target_fs)
             D = librosa.stft(resampled_data, n_fft=n_fft, hop_length=hop_length, win_length=win_length)
             magnitude, phase = librosa.magphase(D)
-            plt.figure()
+            #plt.figure()
             #librosa.display.specshow(magnitude, y_axis='log')
             #plt.show()
             model = NMF(n_components=10, init='random', random_state=0)
